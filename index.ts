@@ -53,9 +53,9 @@ async function insertData() {
             'engine_id': engineId,
             'docs': [
                 {
-                    '_id': 1,
-                    'name': "owo",
-                    'age': 24
+                    '_id': id,
+                    'name': name,
+                    'age': age
                 }
             ]
         })
@@ -121,7 +121,7 @@ async function search() {
           ],
           'query': {
               'query_string': {
-                  'name': name
+                  'query': name
               }
           },
           'size': 1,
