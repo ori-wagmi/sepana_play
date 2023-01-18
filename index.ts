@@ -1,5 +1,6 @@
 // requires and imports
 import fetch from 'node-fetch';
+import { openStdin } from 'process';
 require("dotenv").config();
 var readline = require('readline');
 
@@ -52,9 +53,9 @@ async function insertData() {
             'engine_id': engineId,
             'docs': [
                 {
-                    '_id': id,
-                    'name': name,
-                    'age': age
+                    '_id': 1,
+                    'name': "owo",
+                    'age': 24
                 }
             ]
         })
@@ -78,6 +79,60 @@ async function viewJobStatus() {
     console.log(body);
 }
 
+async function deleteDataById() {
+  let engineId = await askQuestion("Enter Engine Id: ");
+  let id = await askQuestion("Enter _id: ");
+
+  const response = await fetch('https://api.sepana.io/v1/engine/data/delete', {
+      method: 'DELETE',
+      headers: {
+          'x-api-key': API_KEY,
+          'Content-Type': 'application/json'
+      },
+      
+      body: JSON.stringify({
+          'engine_id': engineId,
+          'delete_query': {
+              'query': {
+                  'match': {
+                      'name': id
+                  }
+              }
+          }
+      })
+  });
+
+  console.log(await response.json());
+}
+
+async function search() {
+  let engineId = await askQuestion("Enter Engine Id: ");
+  let name = await askQuestion("Enter name: ");
+  
+  const response = await fetch('https://api.sepana.io/v1/search', {
+      method: 'POST',
+      headers: {
+          'x-api-key': API_KEY,
+          'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+          'engine_ids': [
+              engineId
+          ],
+          'query': {
+              'query_string': {
+                  'name': name
+              }
+          },
+          'size': 1,
+          'page': 0
+      })
+  });
+
+  console.log(await response.json());
+}
+
+
 function askQuestion(query:string): Promise<string> {
     return new Promise(resolve => rl.question(query, ans => {
         resolve(ans);
@@ -94,6 +149,8 @@ async function main(): Promise<void> {
     2. List Public Engines
     3. Insert Data
     4. View Job Status
+    5. Delete Data
+    6. Search
     0. Quit
     `)
 
@@ -111,6 +168,12 @@ async function main(): Promise<void> {
                 break;
             case 4:
                 await viewJobStatus();
+                break;
+            case 5:
+                await deleteDataById();
+                break;
+            case 6:
+                await search();
                 break;
             default:
         }
