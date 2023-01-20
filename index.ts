@@ -81,7 +81,7 @@ async function viewJobStatus() {
 
 async function deleteDataById() {
   let engineId = await askQuestion("Enter Engine Id: ");
-  let id = await askQuestion("Enter _id: ");
+  let name = await askQuestion("Enter name to delete: ");
 
   const response = await fetch('https://api.sepana.io/v1/engine/data/delete', {
       method: 'DELETE',
@@ -94,15 +94,16 @@ async function deleteDataById() {
           'engine_id': engineId,
           'delete_query': {
               'query': {
-                  'match': {
-                      'name': id
+                  'query_string': {
+                      'query': name
                   }
               }
           }
       })
   });
 
-  console.log(await response.json());
+  let responseJson = await response.json();
+  console.log(responseJson);
 }
 
 async function search() {
@@ -124,12 +125,13 @@ async function search() {
                   'query': name
               }
           },
-          'size': 1,
-          'page': 0
       })
   });
 
-  console.log(await response.json());
+  let responseBody = await response.json();
+  console.log(responseBody);
+  console.log("--- results --");
+  console.log(responseBody.hits.hits);
 }
 
 
@@ -143,18 +145,17 @@ function askQuestion(query:string): Promise<string> {
 async function main(): Promise<void> {
     let option: number;
 
-    console.log(`
-    ~~ Welcome to Sepana Tool - Made by ori ~~
-    1. List Private Engines
-    2. List Public Engines
-    3. Insert Data
-    4. View Job Status
-    5. Delete Data
-    6. Search
-    0. Quit
-    `)
-
     while (option != 0) {
+        console.log(`
+        ~~ Welcome to Sepana Tool - Made by ori ~~
+        1. List Private Engines
+        2. List Public Engines
+        3. Insert Data
+        4. View Job Status
+        5. Delete Data
+        6. Search
+        0. Quit
+        `)
         option = Number(await askQuestion("Enter number: "));
         switch (option) {
             case 1:
