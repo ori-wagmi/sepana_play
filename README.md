@@ -9,3 +9,4 @@ API_KEY = <your api key>
 
 ## run
 Run the tool with `npm run dev`.
+
