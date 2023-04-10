@@ -1,5 +1,6 @@
 // requires and imports
 import fetch from 'node-fetch';
+import { openStdin } from 'process';
 require("dotenv").config();
 var readline = require('readline');
 
@@ -78,6 +79,62 @@ async function viewJobStatus() {
     console.log(body);
 }
 
+async function deleteDataById() {
+  let engineId = await askQuestion("Enter Engine Id: ");
+  let name = await askQuestion("Enter name to delete: ");
+
+  const response = await fetch('https://api.sepana.io/v1/engine/data/delete', {
+      method: 'DELETE',
+      headers: {
+          'x-api-key': API_KEY,
+          'Content-Type': 'application/json'
+      },
+      
+      body: JSON.stringify({
+          'engine_id': engineId,
+          'delete_query': {
+              'query': {
+                  'query_string': {
+                      'query': name
+                  }
+              }
+          }
+      })
+  });
+
+  let responseJson = await response.json();
+  console.log(responseJson);
+}
+
+async function search() {
+  let engineId = await askQuestion("Enter Engine Id: ");
+  let name = await askQuestion("Enter name: ");
+  
+  const response = await fetch('https://api.sepana.io/v1/search', {
+      method: 'POST',
+      headers: {
+          'x-api-key': API_KEY,
+          'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+          'engine_ids': [
+              engineId
+          ],
+          'query': {
+              'query_string': {
+                  'query': name
+              }
+          },
+      })
+  });
+
+  let responseBody = await response.json();
+  console.log(responseBody);
+  console.log("--- results --");
+  console.log(responseBody.hits.hits);
+}
+
+
 function askQuestion(query:string): Promise<string> {
     return new Promise(resolve => rl.question(query, ans => {
         resolve(ans);
@@ -88,16 +145,17 @@ function askQuestion(query:string): Promise<string> {
 async function main(): Promise<void> {
     let option: number;
 
-    console.log(`
-    ~~ Welcome to Sepana Tool - Made by ori ~~
-    1. List Private Engines
-    2. List Public Engines
-    3. Insert Data
-    4. View Job Status
-    0. Quit
-    `)
-
     while (option != 0) {
+        console.log(`
+        ~~ Welcome to Sepana Tool - Made by ori ~~
+        1. List Private Engines
+        2. List Public Engines
+        3. Insert Data
+        4. View Job Status
+        5. Delete Data
+        6. Search
+        0. Quit
+        `)
         option = Number(await askQuestion("Enter number: "));
         switch (option) {
             case 1:
@@ -111,6 +169,12 @@ async function main(): Promise<void> {
                 break;
             case 4:
                 await viewJobStatus();
+                break;
+            case 5:
+                await deleteDataById();
+                break;
+            case 6:
+                await search();
                 break;
             default:
         }
